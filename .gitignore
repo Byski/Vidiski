@@ -1,0 +1,10 @@
+.next
+node_modules
+out
+dist
+coverage
+*.log
+.DS_Store
+.env
+public/videos/*.mp4
+.tmp
