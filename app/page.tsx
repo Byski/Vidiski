@@ -8,6 +8,23 @@ import type { MarketingProfile, RenderJobStatus, ScrapedContent, VideoBlueprint,
 
 const LOAD_STEPS = ["Scraping site...", "Extracting profile...", "Generating blueprint...", "Queueing render..."] as const;
 const DRAFT_KEY = "vidiski-draft-v2";
+const EXAMPLE_VIDEOS = [
+  {
+    title: "SaaS Launch",
+    src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+    caption: "Bold and direct founder messaging"
+  },
+  {
+    title: "Product Reveal",
+    src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    caption: "Minimal premium reveal style"
+  },
+  {
+    title: "Conversion Push",
+    src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+    caption: "CTA-focused 30-second cut"
+  }
+] as const;
 
 type GenerateResponse = {
   ok: true;
@@ -60,6 +77,10 @@ export default function HomePage() {
   const [insertTarget, setInsertTarget] = useState<"main" | "sub">("main");
 
   const canSubmit = useMemo(() => url.trim().length > 0 && !busy, [url, busy]);
+  const showOnboarding = useMemo(
+    () => !blueprint && !videoUrl && !renderJobId && !busy,
+    [blueprint, videoUrl, renderJobId, busy]
+  );
 
   const pollRenderStatus = async (jobId: string) => {
     const res = await fetch(`/api/render-status/${jobId}`);
@@ -307,34 +328,100 @@ export default function HomePage() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-[1400px] px-4 py-8 md:px-6">
       <div className="rounded-2xl border border-slate-700/70 bg-slate-900/55 p-6 shadow-2xl shadow-black/40 backdrop-blur-sm md:p-8">
-        <h1 className="text-4xl font-bold tracking-tight text-white md:text-5xl">Vidiski Studio</h1>
-        <p className="mt-3 max-w-3xl text-sm text-slate-300 md:text-base">
-          Build startup launch videos from a URL, then edit every scene with AI help before final render.
-        </p>
+        {showOnboarding ? (
+          <section className="mx-auto max-w-5xl py-6 md:py-10">
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="inline-flex rounded-full border border-white/10 bg-black/25 px-4 py-1 text-xs tracking-wide text-slate-300">
+                AI launch video studio
+              </p>
+              <h1 className="mt-5 text-4xl font-bold tracking-tight text-white md:text-6xl">
+                Turn your homepage into a premium 30-second launch video
+              </h1>
+              <p className="mx-auto mt-4 max-w-2xl text-sm text-slate-300 md:text-base">
+                Paste your URL, let AI build the script, and export a polished vertical promo in minutes.
+              </p>
+            </div>
 
-        <form onSubmit={onSubmit} className="mt-6 grid gap-3 md:grid-cols-[1fr_1fr_auto]">
-          <input
-            type="text"
-            value={url}
-            onChange={(event) => setUrl(event.target.value)}
-            placeholder="https://your-site.com"
-            className="rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none focus:border-slate-500"
-          />
-          <input
-            type="text"
-            value={creativeDirection}
-            onChange={(event) => setCreativeDirection(event.target.value)}
-            placeholder="Optional direction: bold & urgent for developers"
-            className="rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none focus:border-slate-500"
-          />
-          <button
-            type="submit"
-            disabled={!canSubmit}
-            className="rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-white disabled:opacity-50"
-          >
-            {busy ? "Working..." : "Generate Launch Video"}
-          </button>
-        </form>
+            <form onSubmit={onSubmit} className="mx-auto mt-8 max-w-3xl space-y-3">
+              <input
+                type="text"
+                value={url}
+                onChange={(event) => setUrl(event.target.value)}
+                placeholder="https://your-site.com"
+                className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 text-base text-white outline-none backdrop-blur focus:border-cyan-400/60"
+              />
+              <input
+                type="text"
+                value={creativeDirection}
+                onChange={(event) => setCreativeDirection(event.target.value)}
+                placeholder="Optional direction: bold, urgent, founder-focused"
+                className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 text-base text-white outline-none backdrop-blur focus:border-cyan-400/60"
+              />
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                className="w-full rounded-2xl bg-gradient-to-r from-cyan-300 to-blue-300 px-5 py-4 text-base font-semibold text-slate-900 transition hover:scale-[1.01] hover:from-cyan-200 hover:to-blue-200 disabled:opacity-50"
+              >
+                {busy ? "Working..." : "Create my 30-second launch video"}
+              </button>
+            </form>
+
+            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {EXAMPLE_VIDEOS.map((example) => (
+                <article
+                  key={example.title}
+                  className="overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-2 backdrop-blur"
+                >
+                  <div className="overflow-hidden rounded-xl border border-white/10 bg-slate-950/80">
+                    <video
+                      src={example.src}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      className="aspect-[9/16] w-full object-cover"
+                    />
+                  </div>
+                  <div className="px-1 pb-2 pt-3">
+                    <p className="text-sm font-semibold text-white">{example.title}</p>
+                    <p className="mt-1 text-xs text-slate-400">{example.caption}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : (
+          <>
+            <h1 className="text-3xl font-bold tracking-tight text-white md:text-5xl">Vidiski Studio</h1>
+            <p className="mt-3 max-w-3xl text-sm text-slate-300 md:text-base">
+              Build startup launch videos from a URL, then edit every scene with AI help before final render.
+            </p>
+
+            <form onSubmit={onSubmit} className="mt-6 grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+              <input
+                type="text"
+                value={url}
+                onChange={(event) => setUrl(event.target.value)}
+                placeholder="https://your-site.com"
+                className="rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none focus:border-slate-500"
+              />
+              <input
+                type="text"
+                value={creativeDirection}
+                onChange={(event) => setCreativeDirection(event.target.value)}
+                placeholder="Optional direction: bold & urgent for developers"
+                className="rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none focus:border-slate-500"
+              />
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                className="rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-white disabled:opacity-50"
+              >
+                {busy ? "Working..." : "Create my 30-second launch video"}
+              </button>
+            </form>
+          </>
+        )}
 
         {status ? <p className="mt-4 text-sm text-slate-300">{status}</p> : null}
         {renderStatus ? <RenderProgress progress={renderProgress} status={renderStatus} /> : null}
@@ -344,25 +431,11 @@ export default function HomePage() {
           </div>
         ) : null}
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-[360px_1fr_320px]">
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-slate-700 bg-slate-900/70 p-4">
-              <h2 className="text-sm font-semibold text-white">Video output</h2>
-              <div className="mt-3 overflow-hidden rounded-xl border border-slate-700 bg-slate-950/80 p-2">
-                {videoUrl ? (
-                  <video
-                    ref={videoRef}
-                    src={videoUrl}
-                    controls
-                    className="mx-auto aspect-[9/16] w-full max-w-[320px] rounded-lg"
-                  />
-                ) : (
-                  <div className="flex aspect-[9/16] items-center justify-center rounded-lg bg-slate-900 text-xs text-slate-400">
-                    Rendered video appears here
-                  </div>
-                )}
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
+        <section className="mt-6 space-y-6">
+          <div className="rounded-3xl border border-white/10 bg-black/25 p-4 shadow-2xl shadow-black/30 backdrop-blur md:p-6">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-base font-semibold text-white md:text-lg">Video Preview</h2>
+              <div className="flex flex-wrap gap-2">
                 {videoUrl ? (
                   <a
                     href={videoUrl}
@@ -378,166 +451,221 @@ export default function HomePage() {
                   onClick={() => {
                     void rerender().catch((e) => setError(e instanceof Error ? e.message : "Re-render failed."));
                   }}
-                  className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-900 disabled:opacity-50"
+                  className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-900 transition hover:bg-white disabled:opacity-50"
                 >
                   Re-render
                 </button>
               </div>
             </div>
 
-            <ScrapedSidebar scraped={scraped} onInsertText={onInsertFromScrape} />
-          </div>
-
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-slate-700 bg-slate-900/70 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-400">Global AI controls</p>
-              <div className="mt-2 flex flex-col gap-2 md:flex-row">
-                <input
-                  value={globalInstruction}
-                  onChange={(event) => setGlobalInstruction(event.target.value)}
-                  placeholder="e.g. Make tone more aggressive and founder-focused"
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-white outline-none focus:border-slate-500"
+            <div className="mt-4 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-slate-900/80 to-slate-950/90 p-2 md:p-3">
+              {videoUrl ? (
+                <video
+                  ref={videoRef}
+                  src={videoUrl}
+                  controls
+                  className="mx-auto aspect-[9/16] w-full max-w-[360px] rounded-xl shadow-xl shadow-black/50"
                 />
-                <button
-                  type="button"
-                  onClick={() => {
-                    void regenerateAllScenes().catch((e) =>
-                      setError(e instanceof Error ? e.message : "Regeneration failed.")
-                    );
-                  }}
-                  disabled={!blueprint || busy}
-                  className="rounded-lg border border-slate-500 px-3 py-2 text-xs font-semibold text-slate-100 disabled:opacity-50"
-                >
-                  Regenerate All
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    void generateVariants().catch((e) =>
-                      setError(e instanceof Error ? e.message : "Variant generation failed.")
-                    );
-                  }}
-                  disabled={!blueprint || busy}
-                  className="rounded-lg border border-cyan-500/60 px-3 py-2 text-xs font-semibold text-cyan-200 disabled:opacity-50"
-                >
-                  Generate Variants
-                </button>
-              </div>
-              {variants.length > 0 ? (
-                <div className="mt-3 grid gap-2 md:grid-cols-3">
-                  {variants.map((variant) => (
-                    <button
-                      key={variant.style_label}
-                      type="button"
-                      onClick={() => setBlueprint(variant.blueprint)}
-                      className="rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-left text-xs text-slate-200 hover:border-slate-500"
-                    >
-                      <p className="font-semibold text-white">{variant.style_label}</p>
-                      <p className="mt-1 text-slate-400">Apply this direction</p>
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              {blueprint?.scenes.map((scene, sceneIndex) => (
-                <div
-                  key={`${scene.type}-${scene.start}`}
-                  onClick={() => setActiveSceneIndex(sceneIndex)}
-                  className={activeSceneIndex === sceneIndex ? "ring-2 ring-cyan-400/60 rounded-2xl" : "rounded-2xl"}
-                >
-                  <SceneCard
-                    scene={scene}
-                    index={sceneIndex}
-                    busy={sceneBusy === sceneIndex}
-                    onMainChange={(value) => {
-                      setInsertTarget("main");
-                      updateScene(sceneIndex, (current) => ({ ...current, main_text: value }));
-                    }}
-                    onSubChange={(value) => {
-                      setInsertTarget("sub");
-                      updateScene(sceneIndex, (current) => ({ ...current, sub_text: value }));
-                    }}
-                    onAddBullet={() =>
-                      updateScene(sceneIndex, (current) => ({
-                        ...current,
-                        bullets: current.type === "benefits" ? [...current.bullets, ""] : current.bullets
-                      }))
-                    }
-                    onBulletChange={(bulletIndex, value) =>
-                      updateScene(sceneIndex, (current) => ({
-                        ...current,
-                        bullets: current.bullets.map((bullet, idx) => (idx === bulletIndex ? value : bullet))
-                      }))
-                    }
-                    onRemoveBullet={(bulletIndex) =>
-                      updateScene(sceneIndex, (current) => ({
-                        ...current,
-                        bullets: current.bullets.filter((_, idx) => idx !== bulletIndex)
-                      }))
-                    }
-                    onMoveBullet={(from, to) =>
-                      updateScene(sceneIndex, (current) => {
-                        const copy = [...current.bullets];
-                        const [moved] = copy.splice(from, 1);
-                        copy.splice(to, 0, moved);
-                        return { ...current, bullets: copy };
-                      })
-                    }
-                    onAnimationStyleChange={(value) =>
-                      updateScene(sceneIndex, (current) => ({ ...current, animation_style: value }))
-                    }
-                    onEnhance={(instruction) => {
-                      void enhanceScene(sceneIndex, instruction).catch((e) =>
-                        setError(e instanceof Error ? e.message : "Scene enhancement failed.")
-                      );
-                    }}
-                    onPreviewScene={() => previewSceneOnly(scene)}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-slate-700 bg-slate-900/70 p-4">
-              <h3 className="text-sm font-semibold text-white">Profile Snapshot</h3>
-              {profile ? (
-                <div className="mt-3 space-y-2 text-xs text-slate-300">
-                  <p><span className="text-slate-400">Company:</span> {profile.company_name}</p>
-                  <p><span className="text-slate-400">Product:</span> {profile.product_name}</p>
-                  <p><span className="text-slate-400">Audience:</span> {profile.target_audience}</p>
-                  <p><span className="text-slate-400">Tone:</span> {profile.tone}</p>
-                </div>
               ) : (
-                <p className="mt-2 text-xs text-slate-400">Generated profile details appear here.</p>
+                <div className="mx-auto flex aspect-[9/16] w-full max-w-[360px] items-center justify-center rounded-xl bg-slate-900 text-xs text-slate-400">
+                  Rendered video appears here
+                </div>
               )}
             </div>
-
-            <div className="rounded-2xl border border-slate-700 bg-slate-900/70 p-4">
-              <h3 className="text-sm font-semibold text-white">Insert Mode</h3>
-              <p className="mt-1 text-xs text-slate-400">
-                Clicking source copy inserts into active scene {activeSceneIndex + 1} {insertTarget} field.
-              </p>
-              <div className="mt-2 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setInsertTarget("main")}
-                  className={`rounded-md px-2 py-1 text-xs ${insertTarget === "main" ? "bg-cyan-500 text-slate-950" : "border border-slate-600 text-slate-300"}`}
-                >
-                  Main Text
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setInsertTarget("sub")}
-                  className={`rounded-md px-2 py-1 text-xs ${insertTarget === "sub" ? "bg-cyan-500 text-slate-950" : "border border-slate-600 text-slate-300"}`}
-                >
-                  Sub Text
-                </button>
-              </div>
-            </div>
           </div>
+
+          <div className="rounded-3xl border border-white/10 bg-black/25 p-4 backdrop-blur md:p-6">
+            <div className="flex flex-wrap gap-2">
+              {blueprint?.scenes.map((scene, sceneIndex) => (
+                <button
+                  key={`${scene.type}-${scene.start}`}
+                  type="button"
+                  onClick={() => setActiveSceneIndex(sceneIndex)}
+                  className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                    activeSceneIndex === sceneIndex
+                      ? "bg-cyan-300 text-slate-950"
+                      : "border border-white/10 bg-slate-900/60 text-slate-200 hover:border-cyan-300/40"
+                  }`}
+                >
+                  {scene.type}
+                </button>
+              ))}
+            </div>
+
+            {blueprint ? (
+              <div className="mt-4">
+                <SceneCard
+                  scene={blueprint.scenes[activeSceneIndex]}
+                  index={activeSceneIndex}
+                  busy={sceneBusy === activeSceneIndex}
+                  onMainChange={(value) => {
+                    setInsertTarget("main");
+                    updateScene(activeSceneIndex, (current) => ({ ...current, main_text: value }));
+                  }}
+                  onSubChange={(value) => {
+                    setInsertTarget("sub");
+                    updateScene(activeSceneIndex, (current) => ({ ...current, sub_text: value }));
+                  }}
+                  onAddBullet={() =>
+                    updateScene(activeSceneIndex, (current) => ({
+                      ...current,
+                      bullets: current.type === "benefits" ? [...current.bullets, ""] : current.bullets
+                    }))
+                  }
+                  onBulletChange={(bulletIndex, value) =>
+                    updateScene(activeSceneIndex, (current) => ({
+                      ...current,
+                      bullets: current.bullets.map((bullet, idx) => (idx === bulletIndex ? value : bullet))
+                    }))
+                  }
+                  onRemoveBullet={(bulletIndex) =>
+                    updateScene(activeSceneIndex, (current) => ({
+                      ...current,
+                      bullets: current.bullets.filter((_, idx) => idx !== bulletIndex)
+                    }))
+                  }
+                  onMoveBullet={(from, to) =>
+                    updateScene(activeSceneIndex, (current) => {
+                      const copy = [...current.bullets];
+                      const [moved] = copy.splice(from, 1);
+                      copy.splice(to, 0, moved);
+                      return { ...current, bullets: copy };
+                    })
+                  }
+                  onAnimationStyleChange={(value) =>
+                    updateScene(activeSceneIndex, (current) => ({ ...current, animation_style: value }))
+                  }
+                  onEnhance={(instruction) => {
+                    void enhanceScene(activeSceneIndex, instruction).catch((e) =>
+                      setError(e instanceof Error ? e.message : "Scene enhancement failed.")
+                    );
+                  }}
+                  onPreviewScene={() => previewSceneOnly(blueprint.scenes[activeSceneIndex])}
+                />
+              </div>
+            ) : null}
+          </div>
+
+          <details className="group rounded-3xl border border-white/10 bg-black/25 p-4 backdrop-blur md:p-6" open={false}>
+            <summary className="cursor-pointer list-none text-sm font-semibold text-white">
+              Advanced tools
+              <span className="ml-2 text-xs font-normal text-slate-400 group-open:hidden">
+                (regenerate, variants, source content, profile)
+              </span>
+            </summary>
+
+            <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+                  <p className="text-xs uppercase tracking-wide text-slate-400">Global AI controls</p>
+                  <div className="mt-2 flex flex-col gap-2 md:flex-row">
+                    <input
+                      value={globalInstruction}
+                      onChange={(event) => setGlobalInstruction(event.target.value)}
+                      placeholder="e.g. Make tone more aggressive and founder-focused"
+                      className="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-white outline-none focus:border-slate-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void regenerateAllScenes().catch((e) =>
+                          setError(e instanceof Error ? e.message : "Regeneration failed.")
+                        );
+                      }}
+                      disabled={!blueprint || busy}
+                      className="rounded-lg border border-slate-500 px-3 py-2 text-xs font-semibold text-slate-100 disabled:opacity-50"
+                    >
+                      Regenerate All
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void generateVariants().catch((e) =>
+                          setError(e instanceof Error ? e.message : "Variant generation failed.")
+                        );
+                      }}
+                      disabled={!blueprint || busy}
+                      className="rounded-lg border border-cyan-500/60 px-3 py-2 text-xs font-semibold text-cyan-200 disabled:opacity-50"
+                    >
+                      Generate Variants
+                    </button>
+                  </div>
+                  {variants.length > 0 ? (
+                    <div className="mt-3 grid gap-2 md:grid-cols-3">
+                      {variants.map((variant) => (
+                        <button
+                          key={variant.style_label}
+                          type="button"
+                          onClick={() => setBlueprint(variant.blueprint)}
+                          className="rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-left text-xs text-slate-200 hover:border-slate-500"
+                        >
+                          <p className="font-semibold text-white">{variant.style_label}</p>
+                          <p className="mt-1 text-slate-400">Apply this direction</p>
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+                  <h3 className="text-sm font-semibold text-white">Profile Snapshot</h3>
+                  {profile ? (
+                    <div className="mt-3 space-y-2 text-xs text-slate-300">
+                      <p>
+                        <span className="text-slate-400">Company:</span> {profile.company_name}
+                      </p>
+                      <p>
+                        <span className="text-slate-400">Product:</span> {profile.product_name}
+                      </p>
+                      <p>
+                        <span className="text-slate-400">Audience:</span> {profile.target_audience}
+                      </p>
+                      <p>
+                        <span className="text-slate-400">Tone:</span> {profile.tone}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-xs text-slate-400">Generated profile details appear here.</p>
+                  )}
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+                  <h3 className="text-sm font-semibold text-white">Insert Mode</h3>
+                  <p className="mt-1 text-xs text-slate-400">
+                    Clicking source copy inserts into active scene {activeSceneIndex + 1} {insertTarget} field.
+                  </p>
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setInsertTarget("main")}
+                      className={`rounded-md px-2 py-1 text-xs ${
+                        insertTarget === "main"
+                          ? "bg-cyan-500 text-slate-950"
+                          : "border border-slate-600 text-slate-300"
+                      }`}
+                    >
+                      Main Text
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setInsertTarget("sub")}
+                      className={`rounded-md px-2 py-1 text-xs ${
+                        insertTarget === "sub"
+                          ? "bg-cyan-500 text-slate-950"
+                          : "border border-slate-600 text-slate-300"
+                      }`}
+                    >
+                      Sub Text
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <aside className="lg:sticky lg:top-6 lg:h-fit">
+                <ScrapedSidebar scraped={scraped} onInsertText={onInsertFromScrape} />
+              </aside>
+            </div>
+          </details>
         </section>
       </div>
     </main>
