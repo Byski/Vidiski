@@ -180,3 +180,11 @@ This keeps iteration speed high while validating the core loop: generation quali
 Vidiski aims to become the fastest path from product page to launch-ready storytelling.
 
 When teams can explain value clearly, they move faster. Vidiski exists to make that moment immediate.
+
+---
+
+## License
+
+Copyright (c) 2026 Vidiski. All rights reserved.
+
+This source is published for viewing and reference only. It is **not** open source. Use, copying, modification, redistribution, hosting, or use for AI/ML training is prohibited without prior written permission. See [LICENSE](./LICENSE) for full terms.
